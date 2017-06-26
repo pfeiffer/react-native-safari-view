@@ -28,7 +28,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)args callback:(RCTResponseSenderBlock)cal
     }
 
     // Initialize the Safari View
-    self.safariView = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:args[@"url"]] entersReaderIfAvailable:args[@"readerMode"]];
+    self.safariView = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:args[@"url"]] entersReaderIfAvailable:[args[@"readerMode"] boolValue]];
     self.safariView.delegate = self;
 
     // Set tintColor if available
@@ -55,8 +55,16 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)args callback:(RCTResponseSenderBlock)cal
     }
 
     // Display the Safari View
-    UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    [ctrl presentViewController:self.safariView animated:YES completion:nil];
+    UIViewController *root  = [UIApplication sharedApplication].keyWindow.rootViewController;
+    UIViewController *maybeModal = root.presentedViewController;
+    
+    UIViewController *modalRoot = root;
+    
+    if (maybeModal != nil) {
+        modalRoot = maybeModal;
+    }
+    
+    [modalRoot presentViewController:self.safariView animated:YES completion:nil];
 
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"SafariViewOnShow" body:nil];
 }
